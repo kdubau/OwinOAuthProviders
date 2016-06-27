@@ -138,6 +138,21 @@ namespace Owin.Security.Providers.GitHub
                 {
                     context.Identity.AddClaim(new Claim("urn:github:url", context.Link, XmlSchemaString, Options.AuthenticationType));
                 }
+                if (!string.IsNullOrEmpty (context.AccessToken)) {
+                    context.Identity.AddClaim (new Claim ("urn:github:access_token", context.AccessToken, XmlSchemaString, Options.AuthenticationType));
+                }
+                if (Options.Scope.Any (x => x == "user") && Options.Scope.Any(x=> x == "read:org"))
+                {
+                    var userRequest3 = new HttpRequestMessage(HttpMethod.Get, Options.Endpoints.UserInfoEndpoint + "/orgs" + "?access_token=" + Uri.EscapeDataString(accessToken));
+                    userRequest3.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    var userResponse3 = await _httpClient.SendAsync(userRequest3, Request.CallCancelled);
+                    userResponse3.EnsureSuccessStatusCode();
+                    text = await userResponse3.Content.ReadAsStringAsync();
+                    var orgs = JsonConvert.DeserializeObject<List<Organization>>(text);
+                    foreach (var org in orgs) {
+                        context.Identity.AddClaim (new Claim ("urn:github:org", org.Login, XmlSchemaString, Options.AuthenticationType));
+                    }
+                }
                 context.Properties = properties;
 
                 await Options.Provider.Authenticated(context);
