@@ -141,7 +141,7 @@ namespace Owin.Security.Providers.GitHub
                 if (!string.IsNullOrEmpty (context.AccessToken)) {
                     context.Identity.AddClaim (new Claim ("urn:github:access_token", context.AccessToken, XmlSchemaString, Options.AuthenticationType));
                 }
-                if (Options.Scope.Any (x => x == "user") && Options.Scope.Any(x=> x == "read:org"))
+                if (Options.Scope.Any (x => x == "user:email") && Options.Scope.Any(x=> x == "read:org"))
                 {
                     var userRequest3 = new HttpRequestMessage(HttpMethod.Get, Options.Endpoints.UserInfoEndpoint + "/orgs" + "?access_token=" + Uri.EscapeDataString(accessToken));
                     userRequest3.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
